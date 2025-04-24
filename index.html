@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Groq Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .chat-box { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .message { margin: 10px 0; }
+        .user { font-weight: bold; color: #333; }
+        .bot { color: #007BFF; }
+        #user-input { width: 75%; padding: 10px; }
+        button { padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="chat-box">
+        <div id="chat-log"></div>
+        <input id="user-input" type="text" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const message = input.value.trim();
+            if (!message) return;
+
+            const log = document.getElementById("chat-log");
+            log.innerHTML += `<div class="message user">You: ${message}</div>`;
+            input.value = "";
+
+            try {
+                const res = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.reply) {
+                    log.innerHTML += `<div class="message bot">Bot: ${data.reply}</div>`;
+                } else {
+                    log.innerHTML += `<div class="message bot">⚠️ Error: ${data.reply || "Unknown error"}</div>`;
+                }
+            } catch (err) {
+                log.innerHTML += `<div class="message bot">❌ Network error: ${err.message}</div>`;
+            }
+
+            log.scrollTop = log.scrollHeight;
+        }
+    </script>
+</body>
+</html>
